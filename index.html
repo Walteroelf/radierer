@@ -22,6 +22,7 @@
       font-family: Arial, sans-serif;
       color: #222;
       padding: 16px;
+      overflow-x: hidden;
     }
 
     h1 {
@@ -142,6 +143,46 @@
     .hidden {
       display: none;
     }
+
+    /* Luftballon-Animation */
+    #celebrationLayer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 1000;
+    }
+
+    .balloon {
+      position: absolute;
+      bottom: -80px;
+      font-size: 3rem;
+      animation-name: floatUp;
+      animation-duration: 3s;
+      animation-timing-function: ease-out;
+      animation-fill-mode: forwards;
+      filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.25));
+    }
+
+    @keyframes floatUp {
+      0% {
+        transform: translateY(0) scale(0.8) rotate(0deg);
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 1;
+      }
+
+      70% {
+        opacity: 1;
+      }
+
+      100% {
+        transform: translateY(-115vh) scale(1.2) rotate(12deg);
+        opacity: 0;
+      }
+    }
   </style>
 </head>
 
@@ -162,6 +203,9 @@
     <button onclick="showNextImage()">Nächstes Bild</button>
     <button class="secondary" onclick="openPhotoModal()">Neue Fotos auswählen</button>
   </div>
+
+  <!-- Ebene für Luftballons -->
+  <div id="celebrationLayer"></div>
 
   <!-- Pop-up zum Foto-Auswählen -->
   <div class="modal" id="photoModal">
@@ -196,11 +240,16 @@
     const statusText = document.getElementById("status");
     const photoModal = document.getElementById("photoModal");
     const photoInput = document.getElementById("photoInput");
+    const celebrationLayer = document.getElementById("celebrationLayer");
 
     let isDrawing = false;
     let isFinished = false;
-    let eraseRadius = 42;
+
+    // Kleinere, weichere Spur
+    let eraseRadius = 27;
+
     let checkTimer = null;
+    let lastPosition = null;
 
     let photoUrls = [];
     let currentPhotoIndex = 0;
@@ -226,10 +275,8 @@
         return;
       }
 
-      // Alte lokale Bild-URLs freigeben
       photoUrls.forEach(url => URL.revokeObjectURL(url));
 
-      // Nur Bilddateien verwenden
       photoUrls = files
         .filter(file => file.type.startsWith("image/"))
         .map(file => URL.createObjectURL(file));
@@ -260,6 +307,7 @@
       }
 
       isFinished = false;
+      lastPosition = null;
       image.src = photoUrls[currentPhotoIndex];
 
       statusText.textContent =
@@ -288,7 +336,12 @@
       ctx.fillStyle = "red";
       ctx.fillRect(0, 0, rect.width, rect.height);
 
+      // Wichtig für weiche, natürliche Linien
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
       isFinished = false;
+      lastPosition = null;
 
       statusText.textContent =
         "Bild " + (currentPhotoIndex + 1) + " von " + photoUrls.length +
@@ -304,13 +357,46 @@
       };
     }
 
-    function eraseAt(x, y) {
+    function eraseDot(x, y) {
       if (isFinished || photoUrls.length === 0) return;
 
       ctx.globalCompositeOperation = "destination-out";
       ctx.beginPath();
       ctx.arc(x, y, eraseRadius, 0, Math.PI * 2);
       ctx.fill();
+    }
+
+    function eraseLine(from, to) {
+      if (isFinished || photoUrls.length === 0) return;
+
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.lineWidth = eraseRadius * 2;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      ctx.beginPath();
+      ctx.moveTo(from.x, from.y);
+      ctx.lineTo(to.x, to.y);
+      ctx.stroke();
+
+      // Kleine runde Endpunkte verhindern harte Kanten
+      eraseDot(to.x, to.y);
+    }
+
+    function handleEraseMove(event) {
+      const events = event.getCoalescedEvents ? event.getCoalescedEvents() : [event];
+
+      for (const singleEvent of events) {
+        const currentPosition = getPointerPosition(singleEvent);
+
+        if (!lastPosition) {
+          eraseDot(currentPosition.x, currentPosition.y);
+        } else {
+          eraseLine(lastPosition, currentPosition);
+        }
+
+        lastPosition = currentPosition;
+      }
 
       scheduleProgressCheck();
     }
@@ -351,6 +437,8 @@
     }
 
     function revealWholeImage() {
+      if (isFinished) return;
+
       isFinished = true;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -358,6 +446,32 @@
       statusText.textContent =
         "Bild " + (currentPhotoIndex + 1) + " von " + photoUrls.length +
         " — Freigelegt: 100 %";
+
+      startCelebration();
+    }
+
+    function startCelebration() {
+      celebrationLayer.innerHTML = "";
+
+      const balloons = ["🎈", "🎈", "🎈", "✨", "⭐", "🎉"];
+      const numberOfBalloons = 18;
+
+      for (let i = 0; i < numberOfBalloons; i++) {
+        const balloon = document.createElement("div");
+
+        balloon.className = "balloon";
+        balloon.textContent = balloons[Math.floor(Math.random() * balloons.length)];
+
+        balloon.style.left = Math.random() * 100 + "vw";
+        balloon.style.animationDelay = Math.random() * 0.6 + "s";
+        balloon.style.fontSize = 2.2 + Math.random() * 2.2 + "rem";
+
+        celebrationLayer.appendChild(balloon);
+      }
+
+      setTimeout(() => {
+        celebrationLayer.innerHTML = "";
+      }, 3600);
     }
 
     function resetCurrentImage() {
@@ -366,6 +480,7 @@
         return;
       }
 
+      celebrationLayer.innerHTML = "";
       setupCanvas();
     }
 
@@ -374,6 +489,8 @@
         openPhotoModal();
         return;
       }
+
+      celebrationLayer.innerHTML = "";
 
       currentPhotoIndex++;
 
@@ -394,27 +511,29 @@
       }
 
       isDrawing = true;
+      lastPosition = getPointerPosition(event);
+
       canvas.setPointerCapture(event.pointerId);
 
-      const pos = getPointerPosition(event);
-      eraseAt(pos.x, pos.y);
+      eraseDot(lastPosition.x, lastPosition.y);
+      scheduleProgressCheck();
     });
 
     canvas.addEventListener("pointermove", (event) => {
       if (!isDrawing) return;
 
       event.preventDefault();
-
-      const pos = getPointerPosition(event);
-      eraseAt(pos.x, pos.y);
+      handleEraseMove(event);
     });
 
     canvas.addEventListener("pointerup", () => {
       isDrawing = false;
+      lastPosition = null;
     });
 
     canvas.addEventListener("pointercancel", () => {
       isDrawing = false;
+      lastPosition = null;
     });
 
     image.addEventListener("load", () => {
