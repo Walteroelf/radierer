@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>Touch me - Uncolour</title>
 
   <style>
@@ -20,10 +21,11 @@
       background: #f2f2f2;
       font-family: Arial, sans-serif;
       color: #222;
+      padding: 16px;
     }
 
     h1 {
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       font-size: 1.8rem;
       text-align: center;
     }
@@ -36,6 +38,7 @@
     .game-container {
       position: relative;
       width: min(90vw, 900px);
+      max-height: 70vh;
       border-radius: 16px;
       overflow: hidden;
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
@@ -48,7 +51,10 @@
       display: block;
       width: 100%;
       height: auto;
+      max-height: 70vh;
+      object-fit: contain;
       pointer-events: none;
+      background: #ddd;
     }
 
     #coverCanvas {
@@ -64,10 +70,18 @@
       margin-top: 15px;
       font-weight: bold;
       font-size: 1.1rem;
+      text-align: center;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 12px;
     }
 
     button {
-      margin-top: 12px;
       padding: 10px 18px;
       border: none;
       border-radius: 8px;
@@ -80,22 +94,99 @@
     button:hover {
       background: #a80000;
     }
+
+    button.secondary {
+      background: #444;
+    }
+
+    button.secondary:hover {
+      background: #222;
+    }
+
+    /* Pop-up */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+      padding: 20px;
+    }
+
+    .modal-content {
+      width: min(92vw, 520px);
+      background: white;
+      border-radius: 18px;
+      padding: 24px;
+      text-align: center;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
+    }
+
+    .modal-content h2 {
+      margin-top: 0;
+    }
+
+    .modal-content input {
+      margin: 16px 0;
+      width: 100%;
+      font-size: 1rem;
+    }
+
+    .hint {
+      font-size: 0.95rem;
+      color: #555;
+    }
+
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
+
 <body>
 
   <h1>Touch me - Uncolour</h1>
   <p>Wische über die rote Fläche, um das Bild freizulegen.</p>
 
   <div class="game-container" id="gameContainer">
-    <!-- Ersetze bild.jpg durch dein eigenes Bild -->
-   <img id="hiddenImage" src="Christoph.jpg" alt="Verstecktes Bild" />
+    <img id="hiddenImage" src="" alt="Verstecktes Bild" />
     <canvas id="coverCanvas"></canvas>
   </div>
 
-  <div id="status">Freigelegt: 0 %</div>
+  <div id="status">Bitte zuerst Fotos auswählen.</div>
 
-  <button onclick="resetGame()">Neu starten</button>
+  <div class="buttons">
+    <button onclick="resetCurrentImage()">Aktuelles Bild neu starten</button>
+    <button onclick="showNextImage()">Nächstes Bild</button>
+    <button class="secondary" onclick="openPhotoModal()">Neue Fotos auswählen</button>
+  </div>
+
+  <!-- Pop-up zum Foto-Auswählen -->
+  <div class="modal" id="photoModal">
+    <div class="modal-content">
+      <h2>Fotos auswählen</h2>
+
+      <p>
+        Wähle aus der Foto-Mediathek des iPads bis zu
+        <strong>10 Fotos</strong> aus.
+      </p>
+
+      <input
+        id="photoInput"
+        type="file"
+        accept="image/*"
+        multiple
+      />
+
+      <p class="hint">
+        Die Fotos werden nur lokal im Browser verwendet und nicht hochgeladen.
+      </p>
+
+      <button onclick="startWithSelectedPhotos()">Starten</button>
+    </div>
+  </div>
 
   <script>
     const canvas = document.getElementById("coverCanvas");
@@ -103,14 +194,86 @@
     const image = document.getElementById("hiddenImage");
     const container = document.getElementById("gameContainer");
     const statusText = document.getElementById("status");
+    const photoModal = document.getElementById("photoModal");
+    const photoInput = document.getElementById("photoInput");
 
     let isDrawing = false;
     let isFinished = false;
-    let eraseRadius = 38;
+    let eraseRadius = 42;
     let checkTimer = null;
+
+    let photoUrls = [];
+    let currentPhotoIndex = 0;
+
+    function openPhotoModal() {
+      photoModal.classList.remove("hidden");
+    }
+
+    function closePhotoModal() {
+      photoModal.classList.add("hidden");
+    }
+
+    function startWithSelectedPhotos() {
+      const files = Array.from(photoInput.files);
+
+      if (files.length === 0) {
+        alert("Bitte wähle mindestens ein Foto aus.");
+        return;
+      }
+
+      if (files.length > 10) {
+        alert("Bitte wähle höchstens 10 Fotos aus.");
+        return;
+      }
+
+      // Alte lokale Bild-URLs freigeben
+      photoUrls.forEach(url => URL.revokeObjectURL(url));
+
+      // Nur Bilddateien verwenden
+      photoUrls = files
+        .filter(file => file.type.startsWith("image/"))
+        .map(file => URL.createObjectURL(file));
+
+      if (photoUrls.length === 0) {
+        alert("Es wurden keine gültigen Bilddateien ausgewählt.");
+        return;
+      }
+
+      shuffleArray(photoUrls);
+      currentPhotoIndex = 0;
+
+      closePhotoModal();
+      loadCurrentImage();
+    }
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const randomIndex = Math.floor(Math.random() * (i + 1));
+        [array[i], array[randomIndex]] = [array[randomIndex], array[i]];
+      }
+    }
+
+    function loadCurrentImage() {
+      if (photoUrls.length === 0) {
+        statusText.textContent = "Bitte zuerst Fotos auswählen.";
+        return;
+      }
+
+      isFinished = false;
+      image.src = photoUrls[currentPhotoIndex];
+
+      statusText.textContent =
+        "Bild " + (currentPhotoIndex + 1) + " von " + photoUrls.length +
+        " — Freigelegt: 0 %";
+    }
 
     function setupCanvas() {
       const rect = container.getBoundingClientRect();
+
+      if (rect.width === 0 || rect.height === 0) {
+        return;
+      }
+
       const dpr = window.devicePixelRatio || 1;
 
       canvas.width = rect.width * dpr;
@@ -125,8 +288,11 @@
       ctx.fillStyle = "red";
       ctx.fillRect(0, 0, rect.width, rect.height);
 
-      statusText.textContent = "Freigelegt: 0 %";
       isFinished = false;
+
+      statusText.textContent =
+        "Bild " + (currentPhotoIndex + 1) + " von " + photoUrls.length +
+        " — Freigelegt: 0 %";
     }
 
     function getPointerPosition(event) {
@@ -139,7 +305,7 @@
     }
 
     function eraseAt(x, y) {
-      if (isFinished) return;
+      if (isFinished || photoUrls.length === 0) return;
 
       ctx.globalCompositeOperation = "destination-out";
       ctx.beginPath();
@@ -154,10 +320,12 @@
 
       checkTimer = setTimeout(() => {
         checkProgress();
-      }, 100);
+      }, 120);
     }
 
     function checkProgress() {
+      if (canvas.width === 0 || canvas.height === 0) return;
+
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const pixels = imageData.data;
 
@@ -173,7 +341,9 @@
       const percentage = transparentPixels / totalPixels;
       const roundedPercentage = Math.floor(percentage * 100);
 
-      statusText.textContent = "Freigelegt: " + roundedPercentage + " %";
+      statusText.textContent =
+        "Bild " + (currentPhotoIndex + 1) + " von " + photoUrls.length +
+        " — Freigelegt: " + roundedPercentage + " %";
 
       if (percentage >= 0.9) {
         revealWholeImage();
@@ -184,15 +354,45 @@
       isFinished = true;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      statusText.textContent = "Freigelegt: 100 %";
+
+      statusText.textContent =
+        "Bild " + (currentPhotoIndex + 1) + " von " + photoUrls.length +
+        " — Freigelegt: 100 %";
     }
 
-    function resetGame() {
+    function resetCurrentImage() {
+      if (photoUrls.length === 0) {
+        openPhotoModal();
+        return;
+      }
+
       setupCanvas();
+    }
+
+    function showNextImage() {
+      if (photoUrls.length === 0) {
+        openPhotoModal();
+        return;
+      }
+
+      currentPhotoIndex++;
+
+      if (currentPhotoIndex >= photoUrls.length) {
+        currentPhotoIndex = 0;
+        shuffleArray(photoUrls);
+      }
+
+      loadCurrentImage();
     }
 
     canvas.addEventListener("pointerdown", (event) => {
       event.preventDefault();
+
+      if (photoUrls.length === 0) {
+        openPhotoModal();
+        return;
+      }
+
       isDrawing = true;
       canvas.setPointerCapture(event.pointerId);
 
@@ -222,12 +422,10 @@
     });
 
     window.addEventListener("resize", () => {
-      setupCanvas();
+      if (photoUrls.length > 0) {
+        setupCanvas();
+      }
     });
-
-    if (image.complete) {
-      setupCanvas();
-    }
   </script>
 
 </body>
