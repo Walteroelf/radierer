@@ -41,7 +41,6 @@
     body {
       min-height: 100dvh;
       display: flex;
-      flex-direction: column;
       justify-content: center;
       align-items: center;
       font-family: Arial, sans-serif;
@@ -51,22 +50,6 @@
       padding-right: max(12px, env(safe-area-inset-right));
       padding-bottom: max(12px, env(safe-area-inset-bottom));
       padding-left: max(12px, env(safe-area-inset-left));
-    }
-
-    h1 {
-      margin: 0 0 6px 0;
-      font-size: clamp(1.25rem, 3.5vw, 2rem);
-      text-align: center;
-    }
-
-    p {
-      margin-top: 0;
-      text-align: center;
-    }
-
-    .subtitle {
-      margin-bottom: 10px;
-      font-size: clamp(0.9rem, 2.5vw, 1rem);
     }
 
     .app-shell {
@@ -79,10 +62,22 @@
       align-items: center;
     }
 
+    h1 {
+      margin: 0 0 6px 0;
+      font-size: clamp(1.25rem, 3.5vw, 2rem);
+      text-align: center;
+    }
+
+    .subtitle {
+      margin: 0 0 10px 0;
+      text-align: center;
+      font-size: clamp(0.9rem, 2.5vw, 1rem);
+    }
+
     .game-container {
       position: relative;
       width: min(92vw, 980px);
-      max-height: 64dvh;
+      max-height: 66dvh;
       border-radius: 18px;
       overflow: hidden;
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
@@ -95,19 +90,19 @@
       display: block;
       width: 100%;
       height: auto;
-      max-height: 64dvh;
+      max-height: 66dvh;
       object-fit: contain;
       pointer-events: none;
       background: #ddd;
     }
 
     body.landscape .game-container {
-      width: min(78vw, 1100px);
-      max-height: 74dvh;
+      width: min(80vw, 1120px);
+      max-height: 76dvh;
     }
 
     body.landscape .game-container img {
-      max-height: 74dvh;
+      max-height: 76dvh;
     }
 
     body.landscape .subtitle {
@@ -116,11 +111,11 @@
 
     body.portrait .game-container {
       width: min(94vw, 900px);
-      max-height: 58dvh;
+      max-height: 62dvh;
     }
 
     body.portrait .game-container img {
-      max-height: 58dvh;
+      max-height: 62dvh;
     }
 
     #coverCanvas {
@@ -133,7 +128,7 @@
     }
 
     #status {
-      margin-top: 10px;
+      margin-top: 12px;
       font-weight: bold;
       font-size: 1rem;
       text-align: center;
@@ -158,34 +153,19 @@
       transition: width 0.18s linear;
     }
 
-    .controls {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      align-items: center;
-      margin-top: 10px;
-      width: 100%;
-    }
-
-    .button-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
     button,
-    input {
+    input,
+    label {
       touch-action: manipulation;
     }
 
     button {
-      padding: 10px 15px;
+      padding: 11px 17px;
       border: none;
       border-radius: 10px;
       background: #d00000;
       color: white;
-      font-size: 0.95rem;
+      font-size: 1rem;
       font-weight: bold;
       cursor: pointer;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
@@ -195,28 +175,11 @@
       background: #a80000;
     }
 
-    button.secondary {
-      background: #444;
-    }
-
-    button.secondary:hover {
-      background: #222;
-    }
-
-    button.option {
-      background: #777;
-    }
-
-    button.option.active {
-      background: #d00000;
-      outline: 3px solid rgba(208, 0, 0, 0.25);
-    }
-
     .hidden {
       display: none !important;
     }
 
-    /* Foto-Pop-up */
+    /* Foto- und Einstellungsdialog */
     .modal {
       position: fixed;
       inset: 0;
@@ -230,7 +193,9 @@
     }
 
     .modal-content {
-      width: min(92vw, 520px);
+      width: min(94vw, 560px);
+      max-height: 92dvh;
+      overflow-y: auto;
       background: white;
       border-radius: 18px;
       padding: 24px;
@@ -241,44 +206,55 @@
 
     .modal-content h2 {
       margin-top: 0;
+      margin-bottom: 8px;
     }
 
-    .modal-content input {
-      margin: 16px 0;
+    .modal-content input[type="file"] {
+      margin: 14px 0;
       width: 100%;
       font-size: 1rem;
+    }
+
+    .settings-block {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 14px;
+      background: #f3f3f3;
+      text-align: left;
+    }
+
+    .settings-block h3 {
+      margin: 0 0 10px 0;
+      text-align: center;
+      font-size: 1.05rem;
+    }
+
+    .option-grid {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .radio-option {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 11px;
+      border-radius: 999px;
+      background: white;
+      border: 2px solid #ddd;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .radio-option input {
+      accent-color: #d00000;
     }
 
     .hint {
       font-size: 0.95rem;
       color: #555;
-    }
-
-    /* Installationshinweis */
-    .install-hint {
-      position: fixed;
-      inset: 0;
-      z-index: 2000;
-      background: rgba(0, 0, 0, 0.68);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-      touch-action: auto;
-    }
-
-    .install-box {
-      width: min(92vw, 520px);
-      background: white;
-      border-radius: 18px;
-      padding: 24px;
-      text-align: center;
-      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
-      touch-action: auto;
-    }
-
-    .install-box h2 {
-      margin-top: 0;
     }
 
     /* Feier-Ebene */
@@ -297,7 +273,6 @@
       filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.25));
     }
 
-    /* Luftballons, Seifenblasen, Smileys */
     .float-up {
       bottom: -110px;
       animation-name: floatUp;
@@ -331,7 +306,6 @@
       }
     }
 
-    /* Sterne */
     .star-twinkle {
       animation-name: twinkle;
       animation-duration: 5s;
@@ -369,7 +343,6 @@
       }
     }
 
-    /* Konfetti */
     .confetti {
       top: -70px;
       animation-name: confettiFall;
@@ -398,7 +371,6 @@
       }
     }
 
-    /* Feuerwerk */
     .firework-particle {
       width: 10px;
       height: 10px;
@@ -429,7 +401,6 @@
       }
     }
 
-    /* Button nach erfolgreichem Bild */
     #nextAfterSuccess {
       position: fixed;
       left: 50%;
@@ -459,24 +430,6 @@
 
 <body>
 
-  <!-- Hinweis für App-ähnlichen Vollbildmodus -->
-  <div id="installHint" class="install-hint hidden">
-    <div class="install-box">
-      <h2>Als App öffnen</h2>
-
-      <p>
-        Für den Vollbildmodus öffne diese Seite über den Home-Bildschirm.
-      </p>
-
-      <p>
-        Tippe in Safari auf <strong>Teilen</strong> und dann auf
-        <strong>„Zum Home-Bildschirm“</strong>.
-      </p>
-
-      <button onclick="closeInstallHint()">Verstanden</button>
-    </div>
-  </div>
-
   <div class="app-shell">
     <h1>Touch me - Uncolour</h1>
     <p class="subtitle">Wische über die rote Fläche, um das Bild freizulegen.</p>
@@ -491,31 +444,15 @@
     <div class="progress-wrapper" aria-label="Fortschritt">
       <div id="progressBar"></div>
     </div>
-
-    <div class="controls">
-      <div class="button-row">
-        <button class="option" id="brushSmall" onclick="setBrushSize('small')">Klein</button>
-        <button class="option active" id="brushMedium" onclick="setBrushSize('medium')">Mittel</button>
-        <button class="option" id="brushLarge" onclick="setBrushSize('large')">Groß</button>
-        <button class="option" id="modeButton" onclick="toggleScratchMode()">Modus: Weich</button>
-      </div>
-
-      <div class="button-row">
-        <button onclick="resetCurrentImage()">Aktuelles Bild neu starten</button>
-        <button class="secondary" onclick="openPhotoModal()">Neue Fotos auswählen</button>
-      </div>
-    </div>
   </div>
 
-  <!-- Wird erst nach der 5-Sekunden-Animation eingeblendet -->
   <button id="nextAfterSuccess" class="hidden" onclick="showNextImage()">
     Nächstes Bild
   </button>
 
-  <!-- Ebene für Belohnungsanimationen -->
   <div id="celebrationLayer"></div>
 
-  <!-- Pop-up zum Foto-Auswählen -->
+  <!-- Einziges Dialogfeld: Fotos + Einstellungen -->
   <div class="modal hidden" id="photoModal">
     <div class="modal-content">
       <h2>Fotos auswählen</h2>
@@ -531,6 +468,48 @@
         accept="image/*"
         multiple
       />
+
+      <div class="settings-block">
+        <h3>Pinselgröße</h3>
+
+        <div class="option-grid">
+          <label class="radio-option">
+            <input type="radio" name="brushSize" value="small" />
+            Klein
+          </label>
+
+          <label class="radio-option">
+            <input type="radio" name="brushSize" value="medium" checked />
+            Mittel
+          </label>
+
+          <label class="radio-option">
+            <input type="radio" name="brushSize" value="large" />
+            Groß
+          </label>
+        </div>
+      </div>
+
+      <div class="settings-block">
+        <h3>Bild automatisch zeigen ab</h3>
+
+        <div class="option-grid">
+          <label class="radio-option">
+            <input type="radio" name="revealThreshold" value="0.7" />
+            70 %
+          </label>
+
+          <label class="radio-option">
+            <input type="radio" name="revealThreshold" value="0.8" />
+            80 %
+          </label>
+
+          <label class="radio-option">
+            <input type="radio" name="revealThreshold" value="0.9" checked />
+            90 %
+          </label>
+        </div>
+      </div>
 
       <p class="hint">
         Die Fotos werden nur lokal im Browser verwendet und nicht hochgeladen.
@@ -554,16 +533,10 @@
 
     const celebrationLayer = document.getElementById("celebrationLayer");
     const nextAfterSuccess = document.getElementById("nextAfterSuccess");
-    const installHint = document.getElementById("installHint");
-
-    const brushSmall = document.getElementById("brushSmall");
-    const brushMedium = document.getElementById("brushMedium");
-    const brushLarge = document.getElementById("brushLarge");
-    const modeButton = document.getElementById("modeButton");
 
     let isFinished = false;
     let eraseRadius = 26;
-    let scratchMode = false;
+    let revealThreshold = 0.9;
 
     let checkTimer = null;
     let celebrationTimer = null;
@@ -571,28 +544,10 @@
     let photoUrls = [];
     let currentPhotoIndex = 0;
 
-    // Für mehrere Finger gleichzeitig:
     const activePointers = new Map();
 
-    // Audio:
     let audioContext = null;
     let audioUnlocked = false;
-
-    function isStandaloneMode() {
-      return (
-        window.navigator.standalone === true ||
-        window.matchMedia("(display-mode: standalone)").matches ||
-        window.matchMedia("(display-mode: fullscreen)").matches
-      );
-    }
-
-    function closeInstallHint() {
-      installHint.classList.add("hidden");
-
-      if (photoUrls.length === 0) {
-        openPhotoModal();
-      }
-    }
 
     function openPhotoModal() {
       hideNextButton();
@@ -603,8 +558,28 @@
       photoModal.classList.add("hidden");
     }
 
+    function applySettingsFromDialog() {
+      const selectedBrush = document.querySelector('input[name="brushSize"]:checked').value;
+      const selectedThreshold = document.querySelector('input[name="revealThreshold"]:checked').value;
+
+      if (selectedBrush === "small") {
+        eraseRadius = 18;
+      }
+
+      if (selectedBrush === "medium") {
+        eraseRadius = 26;
+      }
+
+      if (selectedBrush === "large") {
+        eraseRadius = 38;
+      }
+
+      revealThreshold = Number(selectedThreshold);
+    }
+
     function startWithSelectedPhotos() {
       unlockAudio();
+      applySettingsFromDialog();
 
       const files = Array.from(photoInput.files);
 
@@ -732,26 +707,21 @@
     }
 
     function eraseAt(x, y) {
-      if (scratchMode) {
-        // Unregelmäßiger Rubbel-Effekt:
-        eraseSoftCircle(x, y, eraseRadius * 0.82);
+      // Leicht unregelmäßiger Rubbel-Effekt mit weichen Kanten
+      eraseSoftCircle(x, y, eraseRadius * 0.86);
 
-        const extraDots = 4;
+      const extraDots = 4;
 
-        for (let i = 0; i < extraDots; i++) {
-          const angle = Math.random() * Math.PI * 2;
-          const distance = Math.random() * eraseRadius * 0.65;
-          const randomRadius = eraseRadius * (0.25 + Math.random() * 0.35);
+      for (let i = 0; i < extraDots; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const distance = Math.random() * eraseRadius * 0.65;
+        const randomRadius = eraseRadius * (0.25 + Math.random() * 0.35);
 
-          eraseSoftCircle(
-            x + Math.cos(angle) * distance,
-            y + Math.sin(angle) * distance,
-            randomRadius
-          );
-        }
-      } else {
-        // Weicher gleichmäßiger Modus:
-        eraseSoftCircle(x, y, eraseRadius);
+        eraseSoftCircle(
+          x + Math.cos(angle) * distance,
+          y + Math.sin(angle) * distance,
+          randomRadius
+        );
       }
     }
 
@@ -820,13 +790,9 @@
       const uncovered = transparentPixels / totalPixels;
       const remaining = Math.max(0, 1 - uncovered);
 
-      // Roter Balken wird kleiner:
       progressBar.style.width = (remaining * 100) + "%";
 
-      statusText.textContent =
-        "Bild " + (currentPhotoIndex + 1) + " von " + photoUrls.length;
-
-      if (uncovered >= 0.9) {
+      if (uncovered >= revealThreshold) {
         revealWholeImage();
       }
     }
@@ -848,43 +814,6 @@
       startRandomCelebration();
     }
 
-    function setBrushSize(size) {
-      unlockAudio();
-
-      brushSmall.classList.remove("active");
-      brushMedium.classList.remove("active");
-      brushLarge.classList.remove("active");
-
-      if (size === "small") {
-        eraseRadius = 18;
-        brushSmall.classList.add("active");
-      }
-
-      if (size === "medium") {
-        eraseRadius = 26;
-        brushMedium.classList.add("active");
-      }
-
-      if (size === "large") {
-        eraseRadius = 38;
-        brushLarge.classList.add("active");
-      }
-    }
-
-    function toggleScratchMode() {
-      unlockAudio();
-
-      scratchMode = !scratchMode;
-
-      if (scratchMode) {
-        modeButton.textContent = "Modus: Rubbeln";
-        modeButton.classList.add("active");
-      } else {
-        modeButton.textContent = "Modus: Weich";
-        modeButton.classList.remove("active");
-      }
-    }
-
     function startRandomCelebration() {
       clearCelebration();
       hideNextButton();
@@ -901,12 +830,29 @@
       const selectedAnimation =
         animations[Math.floor(Math.random() * animations.length)];
 
-      if (selectedAnimation === "balloons") createFloatingEmojis(["🎈", "🎈", "🎈", "🎉"], 24);
-      if (selectedAnimation === "stars") createStars();
-      if (selectedAnimation === "confetti") createConfetti();
-      if (selectedAnimation === "bubbles") createFloatingEmojis(["🫧", "○", "◌"], 28);
-      if (selectedAnimation === "fireworks") createFireworks();
-      if (selectedAnimation === "smileys") createFloatingEmojis(["😀", "😄", "😊", "🥳", "🤩"], 24);
+      if (selectedAnimation === "balloons") {
+        createFloatingEmojis(["🎈", "🎈", "🎈", "🎉"], 24);
+      }
+
+      if (selectedAnimation === "stars") {
+        createStars();
+      }
+
+      if (selectedAnimation === "confetti") {
+        createConfetti();
+      }
+
+      if (selectedAnimation === "bubbles") {
+        createFloatingEmojis(["🫧", "○", "◌"], 28);
+      }
+
+      if (selectedAnimation === "fireworks") {
+        createFireworks();
+      }
+
+      if (selectedAnimation === "smileys") {
+        createFloatingEmojis(["😀", "😄", "😊", "🥳", "🤩"], 24);
+      }
 
       celebrationTimer = setTimeout(() => {
         clearCelebration();
@@ -948,7 +894,14 @@
     }
 
     function createConfetti() {
-      const colors = ["#ff3b3b", "#ffd60a", "#34c759", "#007aff", "#af52de", "#ff9500"];
+      const colors = [
+        "#ff3b3b",
+        "#ffd60a",
+        "#34c759",
+        "#007aff",
+        "#af52de",
+        "#ff9500"
+      ];
 
       for (let i = 0; i < 80; i++) {
         const item = document.createElement("div");
@@ -967,7 +920,14 @@
     }
 
     function createFireworks() {
-      const colors = ["#ff3b3b", "#ffd60a", "#34c759", "#007aff", "#af52de", "#ffffff"];
+      const colors = [
+        "#ff3b3b",
+        "#ffd60a",
+        "#34c759",
+        "#007aff",
+        "#af52de",
+        "#ffffff"
+      ];
 
       for (let burst = 0; burst < 5; burst++) {
         const centerX = 15 + Math.random() * 70;
@@ -1006,19 +966,6 @@
 
     function hideNextButton() {
       nextAfterSuccess.classList.add("hidden");
-    }
-
-    function resetCurrentImage() {
-      unlockAudio();
-
-      if (photoUrls.length === 0) {
-        openPhotoModal();
-        return;
-      }
-
-      hideNextButton();
-      clearCelebration();
-      setupCanvas();
     }
 
     function showNextImage() {
@@ -1151,15 +1098,10 @@
 
     window.addEventListener("load", () => {
       updateOrientation();
-
-      if (!isStandaloneMode()) {
-        installHint.classList.remove("hidden");
-      } else {
-        openPhotoModal();
-      }
+      openPhotoModal();
     });
 
-    // Zusätzlicher Schutz gegen versehentliches Zoomen auf iPad/iPhone:
+    // Schutz gegen versehentliches Zoomen auf iPad/iPhone
     document.addEventListener("gesturestart", function(event) {
       event.preventDefault();
     });
@@ -1188,3 +1130,6 @@
       event.preventDefault();
     });
   </script>
+
+</body>
+</html>
