@@ -5,7 +5,7 @@
 
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
   />
 
   <title>Touch me - Uncolour</title>
@@ -20,6 +20,7 @@
   <style>
     * {
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
 
     html,
@@ -34,6 +35,7 @@
       user-select: none;
       -webkit-touch-callout: none;
       touch-action: none;
+      background: #f2f2f2;
     }
 
     body {
@@ -42,19 +44,18 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      background: #f2f2f2;
       font-family: Arial, sans-serif;
       color: #222;
 
-      padding-top: max(16px, env(safe-area-inset-top));
-      padding-right: max(16px, env(safe-area-inset-right));
-      padding-bottom: max(16px, env(safe-area-inset-bottom));
-      padding-left: max(16px, env(safe-area-inset-left));
+      padding-top: max(12px, env(safe-area-inset-top));
+      padding-right: max(12px, env(safe-area-inset-right));
+      padding-bottom: max(12px, env(safe-area-inset-bottom));
+      padding-left: max(12px, env(safe-area-inset-left));
     }
 
     h1 {
-      margin: 0 0 8px 0;
-      font-size: clamp(1.4rem, 4vw, 2rem);
+      margin: 0 0 6px 0;
+      font-size: clamp(1.25rem, 3.5vw, 2rem);
       text-align: center;
     }
 
@@ -63,10 +64,25 @@
       text-align: center;
     }
 
+    .subtitle {
+      margin-bottom: 10px;
+      font-size: clamp(0.9rem, 2.5vw, 1rem);
+    }
+
+    .app-shell {
+      width: 100%;
+      height: 100%;
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
     .game-container {
       position: relative;
-      width: min(92vw, 950px);
-      max-height: 68vh;
+      width: min(92vw, 980px);
+      max-height: 64dvh;
       border-radius: 18px;
       overflow: hidden;
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
@@ -79,10 +95,32 @@
       display: block;
       width: 100%;
       height: auto;
-      max-height: 68vh;
+      max-height: 64dvh;
       object-fit: contain;
       pointer-events: none;
       background: #ddd;
+    }
+
+    body.landscape .game-container {
+      width: min(78vw, 1100px);
+      max-height: 74dvh;
+    }
+
+    body.landscape .game-container img {
+      max-height: 74dvh;
+    }
+
+    body.landscape .subtitle {
+      display: none;
+    }
+
+    body.portrait .game-container {
+      width: min(94vw, 900px);
+      max-height: 58dvh;
+    }
+
+    body.portrait .game-container img {
+      max-height: 58dvh;
     }
 
     #coverCanvas {
@@ -95,28 +133,59 @@
     }
 
     #status {
-      margin-top: 14px;
+      margin-top: 10px;
       font-weight: bold;
-      font-size: 1.05rem;
+      font-size: 1rem;
       text-align: center;
-      min-height: 1.4em;
+      min-height: 1.3em;
     }
 
-    .buttons {
+    .progress-wrapper {
+      width: min(92vw, 700px);
+      margin-top: 8px;
+      background: #e4e4e4;
+      border-radius: 999px;
+      overflow: hidden;
+      height: 18px;
+      box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.18);
+    }
+
+    #progressBar {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, #ff3b3b, #c90000);
+      border-radius: 999px;
+      transition: width 0.18s linear;
+    }
+
+    .controls {
       display: flex;
-      gap: 10px;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+      margin-top: 10px;
+      width: 100%;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 8px;
       flex-wrap: wrap;
       justify-content: center;
-      margin-top: 12px;
+    }
+
+    button,
+    input {
+      touch-action: manipulation;
     }
 
     button {
-      padding: 11px 18px;
+      padding: 10px 15px;
       border: none;
       border-radius: 10px;
       background: #d00000;
       color: white;
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: bold;
       cursor: pointer;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
@@ -134,6 +203,15 @@
       background: #222;
     }
 
+    button.option {
+      background: #777;
+    }
+
+    button.option.active {
+      background: #d00000;
+      outline: 3px solid rgba(208, 0, 0, 0.25);
+    }
+
     .hidden {
       display: none !important;
     }
@@ -148,6 +226,7 @@
       align-items: center;
       z-index: 999;
       padding: 20px;
+      touch-action: auto;
     }
 
     .modal-content {
@@ -157,6 +236,7 @@
       padding: 24px;
       text-align: center;
       box-shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
+      touch-action: auto;
     }
 
     .modal-content h2 {
@@ -184,6 +264,7 @@
       justify-content: center;
       align-items: center;
       padding: 20px;
+      touch-action: auto;
     }
 
     .install-box {
@@ -193,13 +274,14 @@
       padding: 24px;
       text-align: center;
       box-shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
+      touch-action: auto;
     }
 
     .install-box h2 {
       margin-top: 0;
     }
 
-    /* Feier-Animation */
+    /* Feier-Ebene */
     #celebrationLayer {
       position: fixed;
       inset: 0;
@@ -208,15 +290,20 @@
       z-index: 1000;
     }
 
-    .balloon {
+    .celebration-item {
       position: absolute;
-      bottom: -100px;
-      font-size: 3rem;
+      pointer-events: none;
+      will-change: transform, opacity;
+      filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.25));
+    }
+
+    /* Luftballons, Seifenblasen, Smileys */
+    .float-up {
+      bottom: -110px;
       animation-name: floatUp;
       animation-duration: 5s;
       animation-timing-function: ease-in-out;
       animation-fill-mode: forwards;
-      filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.25));
     }
 
     @keyframes floatUp {
@@ -230,7 +317,7 @@
       }
 
       50% {
-        transform: translateY(-55vh) translateX(18px) scale(1.05) rotate(6deg);
+        transform: translateY(-55vh) translateX(22px) scale(1.05) rotate(6deg);
         opacity: 1;
       }
 
@@ -240,6 +327,104 @@
 
       100% {
         transform: translateY(-115vh) translateX(-18px) scale(1.25) rotate(14deg);
+        opacity: 0;
+      }
+    }
+
+    /* Sterne */
+    .star-twinkle {
+      animation-name: twinkle;
+      animation-duration: 5s;
+      animation-timing-function: ease-in-out;
+      animation-fill-mode: forwards;
+    }
+
+    @keyframes twinkle {
+      0% {
+        transform: scale(0.2) rotate(0deg);
+        opacity: 0;
+      }
+
+      15% {
+        opacity: 1;
+      }
+
+      35% {
+        transform: scale(1.3) rotate(90deg);
+        opacity: 1;
+      }
+
+      60% {
+        transform: scale(0.8) rotate(180deg);
+        opacity: 0.6;
+      }
+
+      85% {
+        opacity: 1;
+      }
+
+      100% {
+        transform: scale(0.1) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    /* Konfetti */
+    .confetti {
+      top: -70px;
+      animation-name: confettiFall;
+      animation-duration: 5s;
+      animation-timing-function: ease-in;
+      animation-fill-mode: forwards;
+    }
+
+    @keyframes confettiFall {
+      0% {
+        transform: translateY(0) translateX(0) rotate(0deg);
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 1;
+      }
+
+      85% {
+        opacity: 1;
+      }
+
+      100% {
+        transform: translateY(115vh) translateX(40px) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    /* Feuerwerk */
+    .firework-particle {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      animation-name: firework;
+      animation-duration: 5s;
+      animation-timing-function: ease-out;
+      animation-fill-mode: forwards;
+    }
+
+    @keyframes firework {
+      0% {
+        transform: translate(0, 0) scale(0.4);
+        opacity: 0;
+      }
+
+      12% {
+        opacity: 1;
+      }
+
+      45% {
+        opacity: 1;
+      }
+
+      100% {
+        transform: translate(var(--dx), var(--dy)) scale(0.1);
         opacity: 0;
       }
     }
@@ -292,27 +477,42 @@
     </div>
   </div>
 
-  <h1>Touch me - Uncolour</h1>
-  <p>Wische über die rote Fläche, um das Bild freizulegen.</p>
+  <div class="app-shell">
+    <h1>Touch me - Uncolour</h1>
+    <p class="subtitle">Wische über die rote Fläche, um das Bild freizulegen.</p>
 
-  <div class="game-container" id="gameContainer">
-    <img id="hiddenImage" src="" alt="Verstecktes Bild" />
-    <canvas id="coverCanvas"></canvas>
+    <div class="game-container" id="gameContainer">
+      <img id="hiddenImage" src="" alt="Verstecktes Bild" />
+      <canvas id="coverCanvas"></canvas>
+    </div>
+
+    <div id="status">Bitte zuerst Fotos auswählen.</div>
+
+    <div class="progress-wrapper" aria-label="Fortschritt">
+      <div id="progressBar"></div>
+    </div>
+
+    <div class="controls">
+      <div class="button-row">
+        <button class="option" id="brushSmall" onclick="setBrushSize('small')">Klein</button>
+        <button class="option active" id="brushMedium" onclick="setBrushSize('medium')">Mittel</button>
+        <button class="option" id="brushLarge" onclick="setBrushSize('large')">Groß</button>
+        <button class="option" id="modeButton" onclick="toggleScratchMode()">Modus: Weich</button>
+      </div>
+
+      <div class="button-row">
+        <button onclick="resetCurrentImage()">Aktuelles Bild neu starten</button>
+        <button class="secondary" onclick="openPhotoModal()">Neue Fotos auswählen</button>
+      </div>
+    </div>
   </div>
 
-  <div id="status">Bitte zuerst Fotos auswählen.</div>
-
-  <div class="buttons">
-    <button onclick="resetCurrentImage()">Aktuelles Bild neu starten</button>
-    <button class="secondary" onclick="openPhotoModal()">Neue Fotos auswählen</button>
-  </div>
-
-  <!-- Wird erst nach der Animation eingeblendet -->
+  <!-- Wird erst nach der 5-Sekunden-Animation eingeblendet -->
   <button id="nextAfterSuccess" class="hidden" onclick="showNextImage()">
     Nächstes Bild
   </button>
 
-  <!-- Ebene für Luftballons und Sterne -->
+  <!-- Ebene für Belohnungsanimationen -->
   <div id="celebrationLayer"></div>
 
   <!-- Pop-up zum Foto-Auswählen -->
@@ -347,6 +547,7 @@
     const image = document.getElementById("hiddenImage");
     const container = document.getElementById("gameContainer");
     const statusText = document.getElementById("status");
+    const progressBar = document.getElementById("progressBar");
 
     const photoModal = document.getElementById("photoModal");
     const photoInput = document.getElementById("photoInput");
@@ -355,18 +556,27 @@
     const nextAfterSuccess = document.getElementById("nextAfterSuccess");
     const installHint = document.getElementById("installHint");
 
-    let isDrawing = false;
-    let isFinished = false;
+    const brushSmall = document.getElementById("brushSmall");
+    const brushMedium = document.getElementById("brushMedium");
+    const brushLarge = document.getElementById("brushLarge");
+    const modeButton = document.getElementById("modeButton");
 
-    // Kleinere, weichere Spur
+    let isFinished = false;
     let eraseRadius = 26;
+    let scratchMode = false;
 
     let checkTimer = null;
     let celebrationTimer = null;
-    let lastPosition = null;
 
     let photoUrls = [];
     let currentPhotoIndex = 0;
+
+    // Für mehrere Finger gleichzeitig:
+    const activePointers = new Map();
+
+    // Audio:
+    let audioContext = null;
+    let audioUnlocked = false;
 
     function isStandaloneMode() {
       return (
@@ -385,6 +595,7 @@
     }
 
     function openPhotoModal() {
+      hideNextButton();
       photoModal.classList.remove("hidden");
     }
 
@@ -393,6 +604,8 @@
     }
 
     function startWithSelectedPhotos() {
+      unlockAudio();
+
       const files = Array.from(photoInput.files);
 
       if (files.length === 0) {
@@ -435,19 +648,21 @@
     function loadCurrentImage() {
       if (photoUrls.length === 0) {
         statusText.textContent = "Bitte zuerst Fotos auswählen.";
+        progressBar.style.width = "100%";
         return;
       }
 
       isFinished = false;
-      lastPosition = null;
+      activePointers.clear();
       hideNextButton();
       clearCelebration();
 
       image.src = photoUrls[currentPhotoIndex];
 
       statusText.textContent =
-        "Bild " + (currentPhotoIndex + 1) + " von " + photoUrls.length +
-        " — Freigelegt: 0 %";
+        "Bild " + (currentPhotoIndex + 1) + " von " + photoUrls.length;
+
+      progressBar.style.width = "100%";
     }
 
     function setupCanvas() {
@@ -475,11 +690,12 @@
       ctx.lineJoin = "round";
 
       isFinished = false;
-      lastPosition = null;
+      activePointers.clear();
 
       statusText.textContent =
-        "Bild " + (currentPhotoIndex + 1) + " von " + photoUrls.length +
-        " — Freigelegt: 0 %";
+        "Bild " + (currentPhotoIndex + 1) + " von " + photoUrls.length;
+
+      progressBar.style.width = "100%";
     }
 
     function getPointerPosition(event) {
@@ -491,48 +707,90 @@
       };
     }
 
-    function eraseDot(x, y) {
+    function eraseSoftCircle(x, y, radius) {
       if (isFinished || photoUrls.length === 0) return;
 
       ctx.globalCompositeOperation = "destination-out";
+
+      const gradient = ctx.createRadialGradient(
+        x,
+        y,
+        radius * 0.15,
+        x,
+        y,
+        radius
+      );
+
+      gradient.addColorStop(0, "rgba(0, 0, 0, 1)");
+      gradient.addColorStop(0.65, "rgba(0, 0, 0, 0.85)");
+      gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+      ctx.fillStyle = gradient;
       ctx.beginPath();
-      ctx.arc(x, y, eraseRadius, 0, Math.PI * 2);
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    function eraseLine(from, to) {
-      if (isFinished || photoUrls.length === 0) return;
+    function eraseAt(x, y) {
+      if (scratchMode) {
+        // Unregelmäßiger Rubbel-Effekt:
+        eraseSoftCircle(x, y, eraseRadius * 0.82);
 
-      ctx.globalCompositeOperation = "destination-out";
-      ctx.lineWidth = eraseRadius * 2;
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
+        const extraDots = 4;
 
-      ctx.beginPath();
-      ctx.moveTo(from.x, from.y);
-      ctx.lineTo(to.x, to.y);
-      ctx.stroke();
+        for (let i = 0; i < extraDots; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const distance = Math.random() * eraseRadius * 0.65;
+          const randomRadius = eraseRadius * (0.25 + Math.random() * 0.35);
 
-      eraseDot(to.x, to.y);
+          eraseSoftCircle(
+            x + Math.cos(angle) * distance,
+            y + Math.sin(angle) * distance,
+            randomRadius
+          );
+        }
+      } else {
+        // Weicher gleichmäßiger Modus:
+        eraseSoftCircle(x, y, eraseRadius);
+      }
     }
 
-    function handleEraseMove(event) {
+    function eraseBetween(from, to) {
+      const dx = to.x - from.x;
+      const dy = to.y - from.y;
+      const distance = Math.hypot(dx, dy);
+
+      const step = Math.max(4, eraseRadius * 0.35);
+      const steps = Math.max(1, Math.ceil(distance / step));
+
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        const x = from.x + dx * t;
+        const y = from.y + dy * t;
+
+        eraseAt(x, y);
+      }
+    }
+
+    function handlePointerMove(event) {
+      const pointerId = event.pointerId;
+      const previousPosition = activePointers.get(pointerId);
+
+      if (!previousPosition) return;
+
       const events = event.getCoalescedEvents
         ? event.getCoalescedEvents()
         : [event];
 
+      let lastKnownPosition = previousPosition;
+
       for (const singleEvent of events) {
         const currentPosition = getPointerPosition(singleEvent);
-
-        if (!lastPosition) {
-          eraseDot(currentPosition.x, currentPosition.y);
-        } else {
-          eraseLine(lastPosition, currentPosition);
-        }
-
-        lastPosition = currentPosition;
+        eraseBetween(lastKnownPosition, currentPosition);
+        lastKnownPosition = currentPosition;
       }
 
+      activePointers.set(pointerId, lastKnownPosition);
       scheduleProgressCheck();
     }
 
@@ -559,14 +817,16 @@
         }
       }
 
-      const percentage = transparentPixels / totalPixels;
-      const roundedPercentage = Math.floor(percentage * 100);
+      const uncovered = transparentPixels / totalPixels;
+      const remaining = Math.max(0, 1 - uncovered);
+
+      // Roter Balken wird kleiner:
+      progressBar.style.width = (remaining * 100) + "%";
 
       statusText.textContent =
-        "Bild " + (currentPhotoIndex + 1) + " von " + photoUrls.length +
-        " — Freigelegt: " + roundedPercentage + " %";
+        "Bild " + (currentPhotoIndex + 1) + " von " + photoUrls.length;
 
-      if (percentage >= 0.9) {
+      if (uncovered >= 0.9) {
         revealWholeImage();
       }
     }
@@ -575,41 +835,162 @@
       if (isFinished) return;
 
       isFinished = true;
-      isDrawing = false;
+      activePointers.clear();
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      progressBar.style.width = "0%";
 
       statusText.textContent =
         "Bild " + (currentPhotoIndex + 1) + " von " + photoUrls.length +
-        " — Freigelegt: 100 %";
+        " geschafft!";
 
-      startCelebration();
+      playSuccessSound();
+      startRandomCelebration();
     }
 
-    function startCelebration() {
+    function setBrushSize(size) {
+      unlockAudio();
+
+      brushSmall.classList.remove("active");
+      brushMedium.classList.remove("active");
+      brushLarge.classList.remove("active");
+
+      if (size === "small") {
+        eraseRadius = 18;
+        brushSmall.classList.add("active");
+      }
+
+      if (size === "medium") {
+        eraseRadius = 26;
+        brushMedium.classList.add("active");
+      }
+
+      if (size === "large") {
+        eraseRadius = 38;
+        brushLarge.classList.add("active");
+      }
+    }
+
+    function toggleScratchMode() {
+      unlockAudio();
+
+      scratchMode = !scratchMode;
+
+      if (scratchMode) {
+        modeButton.textContent = "Modus: Rubbeln";
+        modeButton.classList.add("active");
+      } else {
+        modeButton.textContent = "Modus: Weich";
+        modeButton.classList.remove("active");
+      }
+    }
+
+    function startRandomCelebration() {
       clearCelebration();
       hideNextButton();
 
-      const symbols = ["🎈", "🎈", "🎈", "🎉", "⭐", "✨"];
-      const numberOfBalloons = 22;
+      const animations = [
+        "balloons",
+        "stars",
+        "confetti",
+        "bubbles",
+        "fireworks",
+        "smileys"
+      ];
 
-      for (let i = 0; i < numberOfBalloons; i++) {
-        const balloon = document.createElement("div");
+      const selectedAnimation =
+        animations[Math.floor(Math.random() * animations.length)];
 
-        balloon.className = "balloon";
-        balloon.textContent = symbols[Math.floor(Math.random() * symbols.length)];
-
-        balloon.style.left = Math.random() * 100 + "vw";
-        balloon.style.animationDelay = Math.random() * 0.9 + "s";
-        balloon.style.fontSize = 2.2 + Math.random() * 2.4 + "rem";
-
-        celebrationLayer.appendChild(balloon);
-      }
+      if (selectedAnimation === "balloons") createFloatingEmojis(["🎈", "🎈", "🎈", "🎉"], 24);
+      if (selectedAnimation === "stars") createStars();
+      if (selectedAnimation === "confetti") createConfetti();
+      if (selectedAnimation === "bubbles") createFloatingEmojis(["🫧", "○", "◌"], 28);
+      if (selectedAnimation === "fireworks") createFireworks();
+      if (selectedAnimation === "smileys") createFloatingEmojis(["😀", "😄", "😊", "🥳", "🤩"], 24);
 
       celebrationTimer = setTimeout(() => {
         clearCelebration();
         showNextButton();
       }, 5000);
+    }
+
+    function createFloatingEmojis(symbols, count) {
+      for (let i = 0; i < count; i++) {
+        const item = document.createElement("div");
+
+        item.className = "celebration-item float-up";
+        item.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+
+        item.style.left = Math.random() * 100 + "vw";
+        item.style.animationDelay = Math.random() * 0.8 + "s";
+        item.style.fontSize = 2 + Math.random() * 2.4 + "rem";
+
+        celebrationLayer.appendChild(item);
+      }
+    }
+
+    function createStars() {
+      const symbols = ["⭐", "✨", "🌟", "✦", "✧"];
+
+      for (let i = 0; i < 32; i++) {
+        const item = document.createElement("div");
+
+        item.className = "celebration-item star-twinkle";
+        item.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+
+        item.style.left = Math.random() * 100 + "vw";
+        item.style.top = Math.random() * 90 + "vh";
+        item.style.animationDelay = Math.random() * 1.2 + "s";
+        item.style.fontSize = 1.6 + Math.random() * 2.4 + "rem";
+
+        celebrationLayer.appendChild(item);
+      }
+    }
+
+    function createConfetti() {
+      const colors = ["#ff3b3b", "#ffd60a", "#34c759", "#007aff", "#af52de", "#ff9500"];
+
+      for (let i = 0; i < 80; i++) {
+        const item = document.createElement("div");
+
+        item.className = "celebration-item confetti";
+
+        item.style.left = Math.random() * 100 + "vw";
+        item.style.animationDelay = Math.random() * 1 + "s";
+        item.style.width = 8 + Math.random() * 10 + "px";
+        item.style.height = 12 + Math.random() * 16 + "px";
+        item.style.background = colors[Math.floor(Math.random() * colors.length)];
+        item.style.borderRadius = Math.random() > 0.5 ? "2px" : "999px";
+
+        celebrationLayer.appendChild(item);
+      }
+    }
+
+    function createFireworks() {
+      const colors = ["#ff3b3b", "#ffd60a", "#34c759", "#007aff", "#af52de", "#ffffff"];
+
+      for (let burst = 0; burst < 5; burst++) {
+        const centerX = 15 + Math.random() * 70;
+        const centerY = 18 + Math.random() * 42;
+
+        for (let i = 0; i < 26; i++) {
+          const item = document.createElement("div");
+
+          item.className = "celebration-item firework-particle";
+
+          const angle = (Math.PI * 2 * i) / 26;
+          const distance = 80 + Math.random() * 120;
+
+          item.style.left = centerX + "vw";
+          item.style.top = centerY + "vh";
+          item.style.background = colors[Math.floor(Math.random() * colors.length)];
+          item.style.animationDelay = (burst * 0.45 + Math.random() * 0.25) + "s";
+          item.style.setProperty("--dx", Math.cos(angle) * distance + "px");
+          item.style.setProperty("--dy", Math.sin(angle) * distance + "px");
+
+          celebrationLayer.appendChild(item);
+        }
+      }
     }
 
     function clearCelebration() {
@@ -628,6 +1009,8 @@
     }
 
     function resetCurrentImage() {
+      unlockAudio();
+
       if (photoUrls.length === 0) {
         openPhotoModal();
         return;
@@ -639,6 +1022,8 @@
     }
 
     function showNextImage() {
+      unlockAudio();
+
       if (photoUrls.length === 0) {
         openPhotoModal();
         return;
@@ -657,8 +1042,60 @@
       loadCurrentImage();
     }
 
+    function unlockAudio() {
+      if (audioUnlocked) return;
+
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+
+      if (!AudioContextClass) return;
+
+      audioContext = audioContext || new AudioContextClass();
+
+      if (audioContext.state === "suspended") {
+        audioContext.resume();
+      }
+
+      audioUnlocked = true;
+    }
+
+    function playSuccessSound() {
+      if (!audioContext || !audioUnlocked) return;
+
+      const now = audioContext.currentTime;
+
+      playTone(523.25, now, 0.09);
+      playTone(659.25, now + 0.09, 0.09);
+      playTone(783.99, now + 0.18, 0.16);
+    }
+
+    function playTone(frequency, startTime, duration) {
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(frequency, startTime);
+
+      gain.gain.setValueAtTime(0.0001, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.18, startTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+
+      oscillator.connect(gain);
+      gain.connect(audioContext.destination);
+
+      oscillator.start(startTime);
+      oscillator.stop(startTime + duration + 0.03);
+    }
+
+    function updateOrientation() {
+      const isLandscape = window.innerWidth > window.innerHeight;
+
+      document.body.classList.toggle("landscape", isLandscape);
+      document.body.classList.toggle("portrait", !isLandscape);
+    }
+
     canvas.addEventListener("pointerdown", (event) => {
       event.preventDefault();
+      unlockAudio();
 
       if (photoUrls.length === 0) {
         openPhotoModal();
@@ -667,30 +1104,29 @@
 
       if (isFinished) return;
 
-      isDrawing = true;
-      lastPosition = getPointerPosition(event);
+      const position = getPointerPosition(event);
 
+      activePointers.set(event.pointerId, position);
       canvas.setPointerCapture(event.pointerId);
 
-      eraseDot(lastPosition.x, lastPosition.y);
+      eraseAt(position.x, position.y);
       scheduleProgressCheck();
     });
 
     canvas.addEventListener("pointermove", (event) => {
-      if (!isDrawing) return;
-
       event.preventDefault();
-      handleEraseMove(event);
+
+      if (isFinished) return;
+
+      handlePointerMove(event);
     });
 
-    canvas.addEventListener("pointerup", () => {
-      isDrawing = false;
-      lastPosition = null;
+    canvas.addEventListener("pointerup", (event) => {
+      activePointers.delete(event.pointerId);
     });
 
-    canvas.addEventListener("pointercancel", () => {
-      isDrawing = false;
-      lastPosition = null;
+    canvas.addEventListener("pointercancel", (event) => {
+      activePointers.delete(event.pointerId);
     });
 
     image.addEventListener("load", () => {
@@ -698,19 +1134,57 @@
     });
 
     window.addEventListener("resize", () => {
+      updateOrientation();
+
       if (photoUrls.length > 0 && !isFinished) {
-        setupCanvas();
+        setTimeout(setupCanvas, 120);
+      }
+    });
+
+    window.addEventListener("orientationchange", () => {
+      updateOrientation();
+
+      if (photoUrls.length > 0 && !isFinished) {
+        setTimeout(setupCanvas, 350);
       }
     });
 
     window.addEventListener("load", () => {
+      updateOrientation();
+
       if (!isStandaloneMode()) {
         installHint.classList.remove("hidden");
       } else {
         openPhotoModal();
       }
     });
-  </script>
 
-</body>
-</html>
+    // Zusätzlicher Schutz gegen versehentliches Zoomen auf iPad/iPhone:
+    document.addEventListener("gesturestart", function(event) {
+      event.preventDefault();
+    });
+
+    document.addEventListener("gesturechange", function(event) {
+      event.preventDefault();
+    });
+
+    document.addEventListener("gestureend", function(event) {
+      event.preventDefault();
+    });
+
+    let lastTouchEnd = 0;
+
+    document.addEventListener("touchend", function(event) {
+      const now = Date.now();
+
+      if (now - lastTouchEnd <= 300) {
+        event.preventDefault();
+      }
+
+      lastTouchEnd = now;
+    }, { passive: false });
+
+    document.addEventListener("dblclick", function(event) {
+      event.preventDefault();
+    });
+  </script>
