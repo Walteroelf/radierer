@@ -2,18 +2,42 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  />
 
   <title>Touch me - Uncolour</title>
+
+  <!-- App-ähnliche Darstellung auf iPad/iPhone -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Uncolour" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#d00000" />
 
   <style>
     * {
       box-sizing: border-box;
     }
 
+    html,
     body {
+      width: 100%;
+      height: 100%;
+      min-height: 100dvh;
       margin: 0;
-      min-height: 100vh;
+      overflow: hidden;
+      overscroll-behavior: none;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+      touch-action: none;
+    }
+
+    body {
+      min-height: 100dvh;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -21,13 +45,16 @@
       background: #f2f2f2;
       font-family: Arial, sans-serif;
       color: #222;
-      padding: 16px;
-      overflow-x: hidden;
+
+      padding-top: max(16px, env(safe-area-inset-top));
+      padding-right: max(16px, env(safe-area-inset-right));
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
+      padding-left: max(16px, env(safe-area-inset-left));
     }
 
     h1 {
-      margin-bottom: 8px;
-      font-size: 1.8rem;
+      margin: 0 0 8px 0;
+      font-size: clamp(1.4rem, 4vw, 2rem);
       text-align: center;
     }
 
@@ -38,9 +65,9 @@
 
     .game-container {
       position: relative;
-      width: min(90vw, 900px);
-      max-height: 70vh;
-      border-radius: 16px;
+      width: min(92vw, 950px);
+      max-height: 68vh;
+      border-radius: 18px;
       overflow: hidden;
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
       background: #ddd;
@@ -52,7 +79,7 @@
       display: block;
       width: 100%;
       height: auto;
-      max-height: 70vh;
+      max-height: 68vh;
       object-fit: contain;
       pointer-events: none;
       background: #ddd;
@@ -68,10 +95,11 @@
     }
 
     #status {
-      margin-top: 15px;
+      margin-top: 14px;
       font-weight: bold;
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       text-align: center;
+      min-height: 1.4em;
     }
 
     .buttons {
@@ -83,13 +111,15 @@
     }
 
     button {
-      padding: 10px 18px;
+      padding: 11px 18px;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       background: #d00000;
       color: white;
       font-size: 1rem;
+      font-weight: bold;
       cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
     }
 
     button:hover {
@@ -104,7 +134,11 @@
       background: #222;
     }
 
-    /* Pop-up */
+    .hidden {
+      display: none !important;
+    }
+
+    /* Foto-Pop-up */
     .modal {
       position: fixed;
       inset: 0;
@@ -140,11 +174,32 @@
       color: #555;
     }
 
-    .hidden {
-      display: none;
+    /* Installationshinweis */
+    .install-hint {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      background: rgba(0, 0, 0, 0.68);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
     }
 
-    /* Luftballon-Animation */
+    .install-box {
+      width: min(92vw, 520px);
+      background: white;
+      border-radius: 18px;
+      padding: 24px;
+      text-align: center;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
+    }
+
+    .install-box h2 {
+      margin-top: 0;
+    }
+
+    /* Feier-Animation */
     #celebrationLayer {
       position: fixed;
       inset: 0;
@@ -155,18 +210,18 @@
 
     .balloon {
       position: absolute;
-      bottom: -80px;
+      bottom: -100px;
       font-size: 3rem;
       animation-name: floatUp;
-      animation-duration: 3s;
-      animation-timing-function: ease-out;
+      animation-duration: 5s;
+      animation-timing-function: ease-in-out;
       animation-fill-mode: forwards;
       filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.25));
     }
 
     @keyframes floatUp {
       0% {
-        transform: translateY(0) scale(0.8) rotate(0deg);
+        transform: translateY(0) translateX(0) scale(0.75) rotate(0deg);
         opacity: 0;
       }
 
@@ -174,19 +229,68 @@
         opacity: 1;
       }
 
-      70% {
+      50% {
+        transform: translateY(-55vh) translateX(18px) scale(1.05) rotate(6deg);
+        opacity: 1;
+      }
+
+      85% {
         opacity: 1;
       }
 
       100% {
-        transform: translateY(-115vh) scale(1.2) rotate(12deg);
+        transform: translateY(-115vh) translateX(-18px) scale(1.25) rotate(14deg);
         opacity: 0;
+      }
+    }
+
+    /* Button nach erfolgreichem Bild */
+    #nextAfterSuccess {
+      position: fixed;
+      left: 50%;
+      bottom: max(22px, env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      z-index: 1500;
+      padding: 14px 26px;
+      font-size: 1.15rem;
+      border-radius: 999px;
+      background: #d00000;
+      animation: popIn 0.35s ease-out;
+    }
+
+    @keyframes popIn {
+      0% {
+        transform: translateX(-50%) scale(0.75);
+        opacity: 0;
+      }
+
+      100% {
+        transform: translateX(-50%) scale(1);
+        opacity: 1;
       }
     }
   </style>
 </head>
 
 <body>
+
+  <!-- Hinweis für App-ähnlichen Vollbildmodus -->
+  <div id="installHint" class="install-hint hidden">
+    <div class="install-box">
+      <h2>Als App öffnen</h2>
+
+      <p>
+        Für den Vollbildmodus öffne diese Seite über den Home-Bildschirm.
+      </p>
+
+      <p>
+        Tippe in Safari auf <strong>Teilen</strong> und dann auf
+        <strong>„Zum Home-Bildschirm“</strong>.
+      </p>
+
+      <button onclick="closeInstallHint()">Verstanden</button>
+    </div>
+  </div>
 
   <h1>Touch me - Uncolour</h1>
   <p>Wische über die rote Fläche, um das Bild freizulegen.</p>
@@ -200,15 +304,19 @@
 
   <div class="buttons">
     <button onclick="resetCurrentImage()">Aktuelles Bild neu starten</button>
-    <button onclick="showNextImage()">Nächstes Bild</button>
     <button class="secondary" onclick="openPhotoModal()">Neue Fotos auswählen</button>
   </div>
 
-  <!-- Ebene für Luftballons -->
+  <!-- Wird erst nach der Animation eingeblendet -->
+  <button id="nextAfterSuccess" class="hidden" onclick="showNextImage()">
+    Nächstes Bild
+  </button>
+
+  <!-- Ebene für Luftballons und Sterne -->
   <div id="celebrationLayer"></div>
 
   <!-- Pop-up zum Foto-Auswählen -->
-  <div class="modal" id="photoModal">
+  <div class="modal hidden" id="photoModal">
     <div class="modal-content">
       <h2>Fotos auswählen</h2>
 
@@ -235,24 +343,46 @@
   <script>
     const canvas = document.getElementById("coverCanvas");
     const ctx = canvas.getContext("2d");
+
     const image = document.getElementById("hiddenImage");
     const container = document.getElementById("gameContainer");
     const statusText = document.getElementById("status");
+
     const photoModal = document.getElementById("photoModal");
     const photoInput = document.getElementById("photoInput");
+
     const celebrationLayer = document.getElementById("celebrationLayer");
+    const nextAfterSuccess = document.getElementById("nextAfterSuccess");
+    const installHint = document.getElementById("installHint");
 
     let isDrawing = false;
     let isFinished = false;
 
     // Kleinere, weichere Spur
-    let eraseRadius = 27;
+    let eraseRadius = 26;
 
     let checkTimer = null;
+    let celebrationTimer = null;
     let lastPosition = null;
 
     let photoUrls = [];
     let currentPhotoIndex = 0;
+
+    function isStandaloneMode() {
+      return (
+        window.navigator.standalone === true ||
+        window.matchMedia("(display-mode: standalone)").matches ||
+        window.matchMedia("(display-mode: fullscreen)").matches
+      );
+    }
+
+    function closeInstallHint() {
+      installHint.classList.add("hidden");
+
+      if (photoUrls.length === 0) {
+        openPhotoModal();
+      }
+    }
 
     function openPhotoModal() {
       photoModal.classList.remove("hidden");
@@ -290,6 +420,8 @@
       currentPhotoIndex = 0;
 
       closePhotoModal();
+      hideNextButton();
+      clearCelebration();
       loadCurrentImage();
     }
 
@@ -308,6 +440,9 @@
 
       isFinished = false;
       lastPosition = null;
+      hideNextButton();
+      clearCelebration();
+
       image.src = photoUrls[currentPhotoIndex];
 
       statusText.textContent =
@@ -336,7 +471,6 @@
       ctx.fillStyle = "red";
       ctx.fillRect(0, 0, rect.width, rect.height);
 
-      // Wichtig für weiche, natürliche Linien
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
 
@@ -379,12 +513,13 @@
       ctx.lineTo(to.x, to.y);
       ctx.stroke();
 
-      // Kleine runde Endpunkte verhindern harte Kanten
       eraseDot(to.x, to.y);
     }
 
     function handleEraseMove(event) {
-      const events = event.getCoalescedEvents ? event.getCoalescedEvents() : [event];
+      const events = event.getCoalescedEvents
+        ? event.getCoalescedEvents()
+        : [event];
 
       for (const singleEvent of events) {
         const currentPosition = getPointerPosition(singleEvent);
@@ -440,6 +575,7 @@
       if (isFinished) return;
 
       isFinished = true;
+      isDrawing = false;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -451,27 +587,44 @@
     }
 
     function startCelebration() {
-      celebrationLayer.innerHTML = "";
+      clearCelebration();
+      hideNextButton();
 
-      const balloons = ["🎈", "🎈", "🎈", "✨", "⭐", "🎉"];
-      const numberOfBalloons = 18;
+      const symbols = ["🎈", "🎈", "🎈", "🎉", "⭐", "✨"];
+      const numberOfBalloons = 22;
 
       for (let i = 0; i < numberOfBalloons; i++) {
         const balloon = document.createElement("div");
 
         balloon.className = "balloon";
-        balloon.textContent = balloons[Math.floor(Math.random() * balloons.length)];
+        balloon.textContent = symbols[Math.floor(Math.random() * symbols.length)];
 
         balloon.style.left = Math.random() * 100 + "vw";
-        balloon.style.animationDelay = Math.random() * 0.6 + "s";
-        balloon.style.fontSize = 2.2 + Math.random() * 2.2 + "rem";
+        balloon.style.animationDelay = Math.random() * 0.9 + "s";
+        balloon.style.fontSize = 2.2 + Math.random() * 2.4 + "rem";
 
         celebrationLayer.appendChild(balloon);
       }
 
-      setTimeout(() => {
-        celebrationLayer.innerHTML = "";
-      }, 3600);
+      celebrationTimer = setTimeout(() => {
+        clearCelebration();
+        showNextButton();
+      }, 5000);
+    }
+
+    function clearCelebration() {
+      clearTimeout(celebrationTimer);
+      celebrationLayer.innerHTML = "";
+    }
+
+    function showNextButton() {
+      if (photoUrls.length > 0 && isFinished) {
+        nextAfterSuccess.classList.remove("hidden");
+      }
+    }
+
+    function hideNextButton() {
+      nextAfterSuccess.classList.add("hidden");
     }
 
     function resetCurrentImage() {
@@ -480,7 +633,8 @@
         return;
       }
 
-      celebrationLayer.innerHTML = "";
+      hideNextButton();
+      clearCelebration();
       setupCanvas();
     }
 
@@ -490,7 +644,8 @@
         return;
       }
 
-      celebrationLayer.innerHTML = "";
+      hideNextButton();
+      clearCelebration();
 
       currentPhotoIndex++;
 
@@ -509,6 +664,8 @@
         openPhotoModal();
         return;
       }
+
+      if (isFinished) return;
 
       isDrawing = true;
       lastPosition = getPointerPosition(event);
@@ -541,8 +698,16 @@
     });
 
     window.addEventListener("resize", () => {
-      if (photoUrls.length > 0) {
+      if (photoUrls.length > 0 && !isFinished) {
         setupCanvas();
+      }
+    });
+
+    window.addEventListener("load", () => {
+      if (!isStandaloneMode()) {
+        installHint.classList.remove("hidden");
+      } else {
+        openPhotoModal();
       }
     });
   </script>
